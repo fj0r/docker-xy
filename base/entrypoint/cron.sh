@@ -1,4 +1,4 @@
 if [[ -n "${CRONFILE}" ]]; then
-    crontab ${CRONFILE}
-    cron
+    sudo crontab ${CRONFILE}
+    sudo cron
 fi

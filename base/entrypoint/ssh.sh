@@ -17,8 +17,8 @@ set_user () {
         _UID=${ARR[1]:-1000}
         _GID=${ARR[2]:-1000}
 
-        getent group ${_NAME} >/dev/null 2>&1 || groupadd -g ${_GID} ${_NAME}
-        getent passwd ${_NAME} >/dev/null 2>&1 || useradd -m -u ${_UID} -g ${_GID} -G sudo -s ${__shell} -c "$2" ${_NAME}
+        sudo getent group ${_NAME} >/dev/null 2>&1 || sudo groupadd -g ${_GID} ${_NAME}
+        sudo getent passwd ${_NAME} >/dev/null 2>&1 || sudo useradd -m -u ${_UID} -g ${_GID} -G sudo -s ${__shell} -c "$2" ${_NAME}
     fi
 
     _HOME_DIR=$(getent passwd $1 | cut -d: -f6)
@@ -27,17 +27,18 @@ set_user () {
     { \
         echo "" ;\
         echo "PATH=$PATH" ;\
-    } >> ${_PROFILE}
+    } | sudo tee -a ${_PROFILE} > /dev/null
 
-    mkdir -p ${_HOME_DIR}/.ssh
-    echo "ssh-ed25519 $3" >> ${_HOME_DIR}/.ssh/authorized_keys
-    chown ${_NAME} -R ${_HOME_DIR}/.ssh
-    chmod go-rwx -R ${_HOME_DIR}/.ssh
+    sudo mkdir -p ${_HOME_DIR}/.ssh
+    echo "ssh-ed25519 $3" | sudo tee -a ${_HOME_DIR}/.ssh/authorized_keys > /dev/null
+    sudo chown ${_NAME} -R ${_HOME_DIR}/.ssh
+    sudo chmod go-rwx -R ${_HOME_DIR}/.ssh
 }
 
 init_ssh () {
     if [[ -n "$SSH_HOSTKEY_ED25519" ]]; then
-        echo "$SSH_HOSTKEY_ED25519" | base64 -d > /etc/dropbear/dropbear_ed25519_host_key
+        echo "$SSH_HOSTKEY_ED25519" | base64 -d \
+        | sudo tee /etc/dropbear/dropbear_ed25519_host_key
     fi
 
     for i in "${!ed25519_@}"; do
@@ -57,17 +58,17 @@ run_ssh () {
 
     if [[ -z "$SSH_TIMEOUT" ]]; then
         echo "starting dropbear"
-        /usr/bin/dropbear -REFems -p 22 &> $logfile &
+        sudo /usr/bin/dropbear -REFems -p 22 2>&1 | sudo tee -a $logfile > /dev/null &
     else
         echo "starting dropbear with a timeout of ${SSH_TIMEOUT} seconds"
-        /usr/bin/dropbear -REFems -p 22 -K ${SSH_TIMEOUT} -I ${SSH_TIMEOUT} &> $logfile &
+        sudo /usr/bin/dropbear -REFems -p 22 -K ${SSH_TIMEOUT} -I ${SSH_TIMEOUT} 2>&1 | sudo tee -a $logfile > /dev/null &
     fi
-    echo -n "$! " >> /var/run/services
+    echo -n "$! " | sudo tee -a /var/run/services > /dev/null
 }
 
 __ssh=$(for i in "${!ed25519_@}"; do echo $i; done)
-if [[ -n "$__ssh" ]] || [[ -f /root/.ssh/authorized_keys ]]; then
-    mkdir -p /etc/dropbear
+if [[ -n "$__ssh" ]]; then
+    sudo mkdir -p /etc/dropbear
     init_ssh
     run_ssh
 fi

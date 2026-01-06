@@ -6,9 +6,9 @@ run_socat () {
         logfile=/var/log/socat_$1_$2
     fi
 
-    cmd="socat $1-listen:$2,reuseaddr,fork $1:$3"
-    eval "$cmd &> $logfile &"
-    echo -n "$! " >> /var/run/services
+    cmd="sudo socat $1-listen:$2,reuseaddr,fork $1:$3"
+    eval "$cmd 2>&1 | sudo tee -a $logfile > /dev/null &"
+    echo -n "$! " | sudo tee -a /var/run/services > /dev/null
     echo "$1:$2--> $3"
 }
 

@@ -8,7 +8,7 @@ fi
 
 if [[ -n "${PREBOOT}" ]]; then
     echo "[$(date -Is)] preboot ${PREBOOT}"
-    bash $PREBOOT
+    source $PREBOOT
 fi
 
 
@@ -21,7 +21,7 @@ stop() {
     # Wait for exit
     wait ${pid}
     # All done.
-    echo -n '' > /var/run/services
+    echo -n '' | sudo tee /var/run/services > /dev/null
     echo "Done."
 }
 
@@ -30,7 +30,7 @@ trap stop SIGINT SIGTERM
 
 BASEDIR=$(dirname "$0")
 
-touch /var/run/services
+sudo touch /var/run/services
 for x in $(find $BASEDIR -name '*.sh' -not -path '*/init.sh'); do
     echo "[$(date -Is)] source $x"
     source $x
@@ -38,7 +38,7 @@ done
 
 if [[ -n "${POSTBOOT}" ]]; then
     echo "[$(date -Is)] postboot ${POSTBOOT}"
-    bash $POSTBOOT
+    source $POSTBOOT
 fi
 
 
@@ -52,7 +52,7 @@ if [[ -z $1 ]]; then
 elif [[ $1 == "srv" ]]; then
     echo "[$(date -Is)] enter srv mode"
     sleep infinity &
-    echo -n "$! " >> /var/run/services
+    echo -n "$! " | sudo tee -a /var/run/services > /dev/null
     wait -n $(cat /var/run/services) && exit $?
 else
     echo "[$(date -Is)] enter batch mode"

@@ -15,5 +15,5 @@ if [[ -n "$NVIM_WORKDIR" ]]; then
     nvim --listen 0.0.0.0:${NVIM_PORT:-9999} --headless +"set title titlestring=[${NVIM_TITLE:-$NVIM_WORKDIR}]" ${NVIM_WORKDIR} 2>&1 &
     # nvim --remote-ui --server $addr
 
-    echo -n "$! " >> /var/run/services
+    echo -n "$! " | sudo tee -a /var/run/services > /dev/null
 fi

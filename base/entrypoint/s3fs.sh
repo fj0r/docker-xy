@@ -1,5 +1,5 @@
 # s3fs if s3_id=mount,user,endpoint,region,bucket,accesskey,secretkey,opts...
-# opts: nonempty,a=1,b=2
+# opts: nonempty,use_path_request_style,use_xattr,a=1,b=2
 
 run_s3 () {
     IFS=',' read -ra ARR <<< "$2"
@@ -22,24 +22,19 @@ run_s3 () {
     done
 
     local name=${_mount////_}
-    local logfile
-    if [[ -n "$stdlog" ]]; then
-        logfile=/dev/stdout
-    else
-        logfile=/var/log/s3fs_${name}
-    fi
+    local logfile=/var/log/s3fs_${name}
 
     if [[ ! -d /.s3fs-passwd ]]; then
-        mkdir /.s3fs-passwd
+        sudo mkdir /.s3fs-passwd
     fi
     _authfile=/.s3fs-passwd/$name
     echo authfile $_authfile
 
-    echo "${_accesskey}:${_secretkey}" > $_authfile
-    chmod go-rwx $_authfile
-    chown $_user $_authfile
-    mkdir -p $_mount
-    chown $_user $_mount
+    echo "${_accesskey}:${_secretkey}" | sudo tee $_authfile > /dev/null
+    sudo chmod go-rwx $_authfile
+    sudo chown $_user $_authfile
+    sudo mkdir -p $_mount
+    sudo chown $_user $_mount
 
     if [[ -n "${_region}" ]]; then
         _region="-o endpoint=$_region"
@@ -48,8 +43,8 @@ run_s3 () {
     fi
     cmd="sudo -u $_user s3fs -f $_opt -o bucket=$_bucket -o passwd_file=$_authfile -o url=$_endpoint $_region $_mount"
     echo $cmd
-    eval $cmd &> $logfile  &
-    echo -n "$! " >> /var/run/services
+    eval $cmd 2>&1 | sudo tee -a $logfile &
+    echo -n "$! " | sudo tee -a /var/run/services > /dev/null
 }
 
 __s3=$(for i in "${!s3_@}"; do echo $i; done)
