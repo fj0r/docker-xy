@@ -6,9 +6,8 @@ EXPOSE 22
 
 ENV LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
-    TIMEZONE=Asia/Shanghai
-
-ENV PYTHONUNBUFFERED=x
+    TIMEZONE=Asia/Shanghai \
+    PYTHONUNBUFFERED=x
 
 RUN set -eux \
   ; pacman -Syu --noconfirm \
@@ -71,9 +70,9 @@ ENV DEBUGE=
 ENV PREBOOT=
 ENV POSTBOOT=
 ENV CRONFILE=
-COPY entrypoint /entrypoint
-
 ENV git_pull=
 #ENV ed25519_xxx=
+
+COPY entrypoint /entrypoint
 
 ENTRYPOINT [ "/entrypoint/init.sh" ]
