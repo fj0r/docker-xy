@@ -48,14 +48,26 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
+      - name: Build marimo
+        uses: docker/build-push-action@v4
+        # if: steps.changes.outputs.base == 'true'
+        with:
+          context: ext
+          file: ext/marimo.Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:marimo
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            message=${{ github.event.head_commit.message }}
+
       - name: Build haskell
         uses: docker/build-push-action@v4
+        # if: steps.changes.outputs.base == 'true'
         with:
-          context: ext/haskell
-          file: ext/haskell/Dockerfile
+          context: ext
+          file: ext/haskell.Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:haskell
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             message=${{ github.event.head_commit.message }}
-

@@ -1,6 +1,7 @@
 FROM archlinux:latest
 
 ARG MASTER=master
+ENV MASTER=${MASTER}
 
 EXPOSE 22
 

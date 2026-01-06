@@ -59,7 +59,7 @@ RUN set -eux \
       ; do echo "${p} = \"*\"" >> Cargo.toml ; done \
   ; cargo fetch \
   ; rm -rf ${CARGO_HOME}/registry/src/* \
-  ; chown master:master -R ${CARGO_HOME} \
+  ; chown ${MASTER}:${MASTER} -R ${CARGO_HOME} \
   \
   ; rm -rf /var/cache/pacman/pkg/* \
   ;
