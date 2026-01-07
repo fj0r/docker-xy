@@ -11,11 +11,12 @@ ENV PATH=${CARGO_HOME}/bin:$PATH
 
 RUN set -eux \
   ; pacman -S --noconfirm \
-      rustup gcc sccache \
+      rustup lldb sccache \
   ; rustup default ${RUST_CHANNEL} \
   ; rustup toolchain install \
   ; rustup component add rust-src clippy rustfmt \
   ; rustup component add rust-analyzer \
+; ln -s /usr/bin/rustup /usr/bin/rust-analyzer \
   ; rustup target add x86_64-unknown-linux-musl \
   ; rustup target add wasm32-wasip1 wasm32-wasip2 wasm32-unknown-unknown \
   ; curl -fsSL https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz \
