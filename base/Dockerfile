@@ -54,8 +54,8 @@ RUN set -eux \
         typer pydantic-settings pyyaml \
         boltons decorator \
   \
-  ; pacman -S --noconfirm nodejs npm \
-  ; npm install --location=global \
+  ; pacman -S --noconfirm bun \
+  ; bun install --global --no-cache \
         @typespec/compiler @typespec/json-schema \
         vscode-langservers-extracted \
         yaml-language-server \

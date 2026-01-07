@@ -1,4 +1,4 @@
-ARG BASEIMAGE=ghcr.io/fj0r/so:rust
+ARG BASEIMAGE=ghcr.io/fj0r/xy:rust
 FROM ${BASEIMAGE}
 
 ENV PATH=/home/${MASTER}/.moon/bin:$PATH

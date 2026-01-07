@@ -14,7 +14,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: fj0r/io
+  IMAGE_NAME: fj0r/xy
 
 
 jobs:

@@ -1,4 +1,4 @@
-ARG BASEIMAGE=ghcr.io/fj0r/so:latest
+ARG BASEIMAGE=ghcr.io/fj0r/xy:latest
 FROM ${BASEIMAGE}
 
 ARG PIP_FLAGS="--break-system-packages"

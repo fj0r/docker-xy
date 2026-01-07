@@ -1,4 +1,4 @@
-ARG BASEIMAGE=ghcr.io/fj0r/so:latest
+ARG BASEIMAGE=ghcr.io/fj0r/xy:latest
 FROM ${BASEIMAGE}
 
 ARG RUST_CHANNEL=stable
@@ -30,8 +30,9 @@ RUN set -eux \
       wasm-tools wit-deps-cli wit-bindgen-cli \
       #dioxus-cli \
       #cargo-leptos \
-  ; cargo new cargo-fetch \
-  ; cd cargo-fetch \
+  ; NCF=cargo-fetch \
+  ; cargo new ${NCF} \
+  ; cd ${NCF} \
   ; for p in \
       clap figment tempdir \
       snafu anyhow thiserror \
@@ -58,6 +59,8 @@ RUN set -eux \
       sycamore gloo-net \
       ; do echo "${p} = \"*\"" >> Cargo.toml ; done \
   ; cargo fetch \
+  ; cd .. \
+  ; chown ${MASTER}:${MASTER} -R ${NCF} \
   ; rm -rf ${CARGO_HOME}/registry/src/* \
   ; chown ${MASTER}:${MASTER} -R ${CARGO_HOME} \
   \

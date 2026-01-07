@@ -1,4 +1,4 @@
-name: ext
+name: hs
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -48,14 +48,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - name: Build marimo
+      - name: Build haskell
         uses: docker/build-push-action@v4
         # if: steps.changes.outputs.base == 'true'
         with:
           context: ext
-          file: ext/marimo.Dockerfile
+          file: ext/haskell.Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:marimo
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:haskell
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             message=${{ github.event.head_commit.message }}
