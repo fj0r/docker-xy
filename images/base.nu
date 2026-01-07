@@ -56,5 +56,6 @@ export def main [context: record = {}] {
             CRONFILE: ''
             git_pull: ''
         }
+        do $vt.conf.entrypoint "/entrypoint/init.sh"
     }
 }

@@ -46,7 +46,7 @@ echo "[$(date -Is)] boot completed"
 
 if [[ -z $1 ]]; then
     echo "[$(date -Is)] enter interactive mode"
-    for sh in /usr/local/bin/nu /bin/nu /bin/bash /bin/sh; do
+    for sh in /usr/local/bin/nu /usr/bin/nu /bin/bash /bin/sh; do
         if [[ -e $sh ]]; then exec $sh; fi
     done
 elif [[ $1 == "srv" ]]; then
