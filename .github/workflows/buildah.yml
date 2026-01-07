@@ -66,7 +66,7 @@ jobs:
           overlay use ${{ github.workspace }}/images/base.nu as build
           build {
             from: archlinux
-            username: ${{ env.USERNAME }}
+            author: ${{ env.USERNAME }}
             password: ${{ secrets.GHCR_TOKEN }}
             image: ${{ env.REGISTRY }}/${{ env.USERNAME }}/${{ env.IMAGE_NAME }}
             tags: latest
