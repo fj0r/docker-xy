@@ -1,50 +1,49 @@
+use utils.nu *
+
 export def install [pkgs] {
-    do $in.run [
+    run [
         $"pacman -Sy --noconfirm ($pkgs | str join ' ')"
         "rm -rf /var/cache/pacman/pkg/*"
     ]
 }
 
 export def update [] {
-    do $in.run ["pacman -Syu --noconfirm"]
+    run ["pacman -Syu --noconfirm"]
 }
 
 export def 'pip install' [pkgs] {
-    let n = $in
     let pkgs = $pkgs | str join ' '
-    do $n.run [
+    run [
         $"pip install --no-cache-dir --break-system-packages ($pkgs)"
     ]
 }
 
 export def 'setup python' [pkgs] {
-    let n = $in
-    $n | install [
+    install [
         python python-pip
     ]
-    $n | pip install $pkgs
+    pip install $pkgs
 }
 
 export def 'setup js' [pkgs] {
-    let n = $in
-    $n | install [
+    install [
         bun
     ]
     let pkgs = $pkgs | str join ' '
-    do $n.run [
+    run [
         $"bun install --global --no-cache ($pkgs)"
     ]
 }
 
 export module config {
     export def timezone [timezone] {
-        do $in.run [
+        run [
             $'ln -sf /usr/share/zoneinfo/($timezone) /etc/localtime'
             $'echo "($timezone)" > /etc/timezone'
         ]
     }
     export def git [author] {
-        do $in.run [
+        run [
          'git config --global pull.rebase false'
          'git config --global init.defaultBranch main'
          $'git config --global user.name "($author)"'
@@ -52,14 +51,13 @@ export module config {
         ]
     }
     export def sudo [] {
-        do $in.run [
+        run [
             `sed -i 's/# \(%.*NOPASSWD.*\)/&\n\1/' /etc/sudoers`
         ]
     }
     export def master [user workdir] {
-        let n = $in
         let xdg_home = $"/home/($user)/.config"
-        do $n.run [
+        run [
             $'useradd -mU -G wheel,root -s /usr/bin/nu ($user)'
             $'mkdir -p ($workdir)'
             $'chown ($user):($user) -R ($workdir)'
@@ -70,7 +68,7 @@ export module config {
     }
 
     export def nushell [user home url] {
-        do $in.run [
+        run [
             $'git clone --depth=3 ($url) ($home)/nushell'
             'opwd=$PWD'
             $'cd ($home)/nushell'

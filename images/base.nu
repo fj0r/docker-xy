@@ -12,18 +12,18 @@ export def main [context: record = {}] {
         }
     }
     | merge $context
-    | build {|ctx, vt|
-        do $vt.conf.expose 22
-        do $vt.conf.env {
+    | build {|ctx|
+        conf expose 22
+        conf env {
             LANG: C.UTF-8
             LC_ALL: C.UTF-8
             TIMEZONE: $ctx.timezone
             PYTHONUNBUFFERED: x
         }
-        do $vt.conf.volume $ctx.workdir
-        do $vt.conf.workdir $ctx.workdir
-        $vt | arch update
-        $vt | arch install [
+        conf volume $ctx.workdir
+        conf workdir $ctx.workdir
+        arch update
+        arch install [
             sudo cronie tzdata
             # base-devel
             nushell git
@@ -31,31 +31,31 @@ export def main [context: record = {}] {
             tcpdump socat websocat
             ripgrep dust
         ]
-        $vt | arch config timezone $ctx.timezone
-        $vt | arch config sudo
-        $vt | arch config git $ctx.author
-        let xdg_home = $vt | arch config master $ctx.user $ctx.workdir
-        $vt | arch config nushell $ctx.user $xdg_home $ctx.config.nushell
-        $vt | arch setup python [
+        arch config timezone $ctx.timezone
+        arch config sudo
+        arch config git $ctx.author
+        let xdg_home = arch config master $ctx.user $ctx.workdir
+        arch config nushell $ctx.user $xdg_home $ctx.config.nushell
+        arch setup python [
             ty
             httpx aiofile aiostream fastapi uvicorn
             debugpy pytest pydantic pydantic-graph PyParsing
             typer pydantic-settings pyyaml
             boltons decorator
         ]
-        $vt | arch setup js [
+        arch setup js [
             @typespec/compiler @typespec/json-schema
             vscode-langservers-extracted
             yaml-language-server
         ]
-        do $vt.copy entrypoint /entrypoint
-        do $vt.conf.env {
+        copy entrypoint /entrypoint
+        conf env {
             DEBUGE: ''
             PREBOOT: ''
             POSTBOOT: ''
             CRONFILE: ''
             git_pull: ''
         }
-        do $vt.conf.entrypoint "/entrypoint/init.sh"
+        conf entrypoint "/entrypoint/init.sh"
     }
 }
