@@ -58,7 +58,7 @@ export module config {
     }
     export def master [user workdir] {
         let n = $in
-        let xdg_home = /home/($user)/.config
+        let xdg_home = $"/home/($user)/.config"
         do $n.run [
             $'useradd -mU -G wheel,root -s /usr/bin/nu ($user)'
             $'mkdir -p ($workdir)'
