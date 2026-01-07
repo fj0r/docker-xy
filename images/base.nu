@@ -13,14 +13,15 @@ export def main [context: record = {}] {
     }
     | merge $context
     | build {|ctx|
-        conf expose 22
+        conf expose [22]
         conf env {
             LANG: C.UTF-8
             LC_ALL: C.UTF-8
             TIMEZONE: $ctx.timezone
+            MASTER: $ctx.user
             PYTHONUNBUFFERED: x
         }
-        conf volume $ctx.workdir
+        conf volume [$ctx.workdir]
         conf workdir $ctx.workdir
         arch update
         arch install [
@@ -56,6 +57,7 @@ export def main [context: record = {}] {
             CRONFILE: ''
             git_pull: ''
         }
-        conf entrypoint "/entrypoint/init.sh"
+        conf entrypoint ["/entrypoint/init.sh"]
+        conf cmd []
     }
 }

@@ -21,7 +21,7 @@ export module conf {
         | buildah config ...$in $env.BUILDAH_WORKING_CONTAINER
     }
 
-    export def expose [...vec] {
+    export def expose [vec: list] {
         $vec
         | lg f config expose
         | each {|x|
@@ -36,7 +36,7 @@ export module conf {
         | buildah config ...$in $env.BUILDAH_WORKING_CONTAINER
     }
 
-    export def volume [...vec] {
+    export def volume [vec: list] {
         $vec
         | lg f config volume
         | each {|x| [--volume $x] }
@@ -52,14 +52,14 @@ export module conf {
         | buildah config ...$in $env.BUILDAH_WORKING_CONTAINER
     }
 
-    export def entrypoint [...vec] {
+    export def entrypoint [vec: list] {
         $vec
         | lg f config entrypoint
         | to json -r
         | buildah config --entrypoint $in $env.BUILDAH_WORKING_CONTAINER
     }
 
-    export def cmd [...vec] {
+    export def cmd [vec: list] {
         $vec
         | lg f config cmd
         | to json -r

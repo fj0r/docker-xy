@@ -71,3 +71,25 @@ jobs:
             image: ${{ env.REGISTRY }}/${{ env.USERNAME }}/${{ env.IMAGE_NAME }}
             tags: latest
           }
+
+      - name: build rust
+        shell: buildah unshare nu {0}
+        run: |
+          overlay use ${{ github.workspace }}/images/rust.nu as build
+          build {
+            author: ${{ env.USERNAME }}
+            password: ${{ secrets.GHCR_TOKEN }}
+            image: ${{ env.REGISTRY }}/${{ env.USERNAME }}/${{ env.IMAGE_NAME }}
+            tags: rust
+          }
+
+      - name: build moon
+        shell: buildah unshare nu {0}
+        run: |
+          overlay use ${{ github.workspace }}/images/moon.nu as build
+          build {
+            author: ${{ env.USERNAME }}
+            password: ${{ secrets.GHCR_TOKEN }}
+            image: ${{ env.REGISTRY }}/${{ env.USERNAME }}/${{ env.IMAGE_NAME }}
+            tags: z
+          }
