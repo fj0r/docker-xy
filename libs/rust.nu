@@ -16,7 +16,7 @@ export def up [
         run [
             $"rustup component add ($component | str join ' ')"
         ]
-        let dst = $env.BUILDAH_WORKING_MOUNTPOINT | path join usr/bin/
+        let dst = $env.BUILDAH_WORKING_MOUNTPOINT | path join usr/bin
         for b in [rust-analyzer] {
             if ($b in $bin) and not ($dst | path join $b | path exists) {
                 lg o -p 'fix-rustup-bin' $b
@@ -46,20 +46,27 @@ export def up [
 }
 
 export def prefetch [owner workdir proj pkgs] {
+    let dst = $env.BUILDAH_WORKING_MOUNTPOINT
+    | path join (relative-path $workdir)
+    mkdir $dst
     run [
         $"cd ($workdir)"
+        $"pwd"
         $"cargo new ($proj)"
-        $"cd ($proj)"
+        $"ls ($proj)"
     ]
-    let dst = [$env.BUILDAH_WORKING_MOUNTPOINT $workdir $proj] | path join Cargo.toml
-    lg o -p 'prefetch' $dst
+    tree $dst
+
     let pkgs = $pkgs | reduce -f {} {|i,a|
         $a | insert $i '*'
     }
-    let n = open $dst | update dependencies $pkgs 
+    let dstf = $dst | path join $proj Cargo.toml
+    lg o -p 'prefetch' $dstf
+    let n = open $dstf | update dependencies $pkgs 
     print $n
-    $n | save -f $dst
+    $n | save -f $dstf
     run [
+        $"cd ($workdir | path join $proj)"
         "cargo fetch"
         $"cd ($workdir)"
         $"chown ($owner):($owner) -R ($proj)"

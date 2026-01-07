@@ -3,3 +3,5 @@ export use lg.nu
 export use arch.nu
 export use utils.nu *
 export use rust.nu
+export use nushell.nu
+export use setup.nu

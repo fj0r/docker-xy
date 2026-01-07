@@ -27,16 +27,27 @@ export def main [context: record = {}] {
         arch install [
             sudo cronie tzdata
             # base-devel
-            nushell git
+            # nushell
+            git
             openssh rsync dropbear s3fs
             tcpdump socat websocat
             ripgrep dust
         ]
-        arch config timezone $ctx.timezone
-        arch config sudo
-        arch config git $ctx.author
-        let xdg_home = arch config master $ctx.user $ctx.workdir
-        arch config nushell $ctx.user $xdg_home $ctx.config.nushell
+        setup timezone $ctx.timezone
+        setup sudo
+        setup git $ctx.author
+        #arch config nushell $ctx.user $xdg_home $ctx.config.nushell
+        let xdg_config = $"/home/($ctx.user)/.config"
+        setup master {
+            user: $ctx.user
+            workdir: $ctx.workdir
+            config: $xdg_config
+        }
+        nushell up $ctx.user '/usr/local/bin' {
+            src: $ctx.config.nushell
+            dst: $xdg_config
+            plugin: [query]
+        }
         arch setup python [
             ty
             httpx aiofile aiostream fastapi uvicorn
@@ -57,7 +68,7 @@ export def main [context: record = {}] {
             CRONFILE: ''
             git_pull: ''
         }
-        conf entrypoint ["/entrypoint/init.sh"]
         conf cmd []
+        conf entrypoint ["/entrypoint/init.sh"]
     }
 }

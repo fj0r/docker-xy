@@ -66,3 +66,11 @@ export module conf {
         | buildah config --cmd $in $env.BUILDAH_WORKING_CONTAINER
     }
 }
+
+export def relative-path [path] {
+    if ($path | str starts-with '/') {
+        $path | path relative-to '/'
+    } else {
+        $path
+    }
+}

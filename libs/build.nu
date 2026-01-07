@@ -10,7 +10,9 @@ export def main [acts --squash] {
         BUILDAH_WORKING_CONTAINER: $working_container
         BUILDAH_WORKING_MOUNTPOINT: $mountpoint
     }
+    | lg f inject environment
     | load-env
+
     do $acts $ctx
 
     let image = ($ctx.image):($ctx.tags)
