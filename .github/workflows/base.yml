@@ -12,7 +12,6 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME: fj0r/xy
 
-
 jobs:
   build:
 
