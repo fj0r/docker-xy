@@ -46,7 +46,7 @@ export def up [
     ]
 }
 
-export def prefetch [owner workdir proj pkgs] {
+export def prefetch [owner workdir proj pkgs --test] {
     let dst = $env.BUILDAH_WORKING_MOUNTPOINT
     | path join (relative-path $workdir)
     # mkdir $dst
@@ -66,6 +66,11 @@ export def prefetch [owner workdir proj pkgs] {
     cat $dstf | from toml | update dependencies $pkgs 
     | do { let n = $in; print $n; $n }
     | save -f $dstf
+
+    if $test {
+        run [$'cat /world/($proj)/Cargo.toml']
+        return
+    }
 
     run [
         $"cd ($workdir | path join $proj)"

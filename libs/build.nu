@@ -1,6 +1,6 @@
 use lg.nu
 
-export def main [acts --squash] {
+export def main [acts --squash --skip-push] {
     let ctx = $in
     let working_container = buildah from $ctx.from
     let mountpoint = buildah mount $working_container
@@ -15,12 +15,15 @@ export def main [acts --squash] {
 
     do $acts $ctx
 
-    let image = ($ctx.image):($ctx.tags)
+    let image = ($ctx.image):($ctx.tags? | default 'latest')
+    lg o commit $image
     if $squash {
         buildah commit --squash $working_container $image
     } else {
         buildah commit $working_container $image
     }
-    lg o push $image
-    buildah push --creds ($ctx.author):($ctx.password) $image
+    if not $skip_push {
+        lg o push $image
+        buildah push --creds ($ctx.author):($ctx.password) $image
+    }
 }
