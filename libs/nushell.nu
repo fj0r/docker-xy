@@ -1,16 +1,18 @@
 use utils.nu *
 use lg
 
-export def up [user dir config: record] {
-    let ver = curl --retry 3 -fsSL https://api.github.com/repos/nushell/nushell/releases/latest | from json | get tag_name
-    lg o -p 'nushell-version' $ver
+export def up [user dir config: record --skip-download] {
+    if not $skip_download {
+        let ver = curl --retry 3 -fsSL https://api.github.com/repos/nushell/nushell/releases/latest | from json | get tag_name
+        lg o -p 'nushell-version' $ver
 
-    let url = $"https://github.com/nushell/nushell/releases/download/($ver)/nu-($ver)-x86_64-unknown-linux-musl.tar.gz"
-    let dst = $env.BUILDAH_WORKING_MOUNTPOINT | path join (relative-path $dir)
-    lg o -p 'nushell-dir' $dst
+        let url = $"https://github.com/nushell/nushell/releases/download/($ver)/nu-($ver)-x86_64-unknown-linux-musl.tar.gz"
+        let dst = $env.BUILDAH_WORKING_MOUNTPOINT | path join (relative-path $dir)
+        lg o -p 'nushell-dir' $dst
 
-    let plugin = $config.plugin | each {|x| $"*/nu_plugin_($x)" }
-    curl --retry 3 -fsSL $url | tar -zxf - -C $dst --strip-components=1 --wildcards '*/nu' ...$plugin
+        let plugin = $config.plugin | each {|x| $"*/nu_plugin_($x)" }
+        curl --retry 3 -fsSL $url | tar -zxf - -C $dst --strip-components=1 --wildcards '*/nu' ...$plugin
+    }
 
     let reg = $config.plugin
     | each {|x| $"plugin add ($dir | path join nu_plugin_($x))"}

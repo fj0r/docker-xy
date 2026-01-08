@@ -9,10 +9,10 @@ export def timezone [timezone] {
 
 export def git [author] {
     run [
-     'git config --global pull.rebase false'
-     'git config --global init.defaultBranch main'
-     $'git config --global user.name "($author)"'
-     $'git config --global user.email "($author)@container"'
+        'git config --global pull.rebase false'
+        'git config --global init.defaultBranch main'
+        $'git config --global user.name "($author)"'
+        $'git config --global user.email "($author)@container"'
     ]
 }
 
@@ -22,12 +22,16 @@ export def sudo [] {
     ]
 }
 
-export def master [config] {
+export def master [
+    user: string
+    workdir: string
+    config_dir: string
+] {
     run [
-        $'useradd -mU -G wheel,root ($config.user)'
-        $'mkdir -p ($config.workdir)'
-        $'chown ($config.user):($config.user) -R ($config.workdir)'
-        $'mkdir -p ($config.config)'
-        $'chown ($config.user):($config.user) -R ($config.config)'
+        $'useradd -mU -G wheel,root ($user)'
+        $'mkdir -p ($workdir)'
+        $'chown ($user):($user) -R ($workdir)'
+        $'mkdir -p ($config_dir)'
+        $'chown ($user):($user) -R ($config_dir)'
     ]
 }

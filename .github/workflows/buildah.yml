@@ -61,7 +61,8 @@ jobs:
               - 'images/rust.nu'
 
       - name: build base
-        if: steps.changes.outputs.base == 'true'
+        # if: steps.changes.outputs.base == 'true'
+        if: false
         shell: buildah unshare nu {0}
         run: |
           overlay use ${{ github.workspace }}/images/base.nu as build

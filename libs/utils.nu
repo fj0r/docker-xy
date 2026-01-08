@@ -12,6 +12,10 @@ export def run [cmd: list] {
     | buildah run $env.BUILDAH_WORKING_CONTAINER bash -c $in
 }
 
+export def commit [image] {
+    buildah commit $env.BUILDAH_WORKING_CONTAINER $image
+}
+
 export module conf {
     export def env [rec: record] {
         $rec

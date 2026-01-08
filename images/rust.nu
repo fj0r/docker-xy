@@ -19,7 +19,7 @@ export def main [context: record = {}] {
         arch install [
             rustup lldb sccache
         ]
-        rust up --component [
+        rust up $ctx.user $ctx.rust.channel --component [
             rust-src clippy rustfmt
             rust-analyzer
         ] --target [
@@ -27,14 +27,14 @@ export def main [context: record = {}] {
             wasm32-wasip1 wasm32-wasip2 wasm32-unknown-unknown
         ] --bin [
             bacon
-            # cargo-pgo cargo-profiler cargo-bloat
+            cargo-pgo cargo-profiler cargo-bloat
             cargo-expand cargo-eval cargo-tree
             cargo-feature cargo-edit cargo-rail
             rust-script trunk cargo-wasi
             wasm-tools wit-deps-cli wit-bindgen-cli
             #dioxus-cli
             #cargo-leptos
-        ] $ctx.user $ctx.rust.channel
+        ]
         rust prefetch $ctx.user $ctx.workdir 'cargo-fetch' [
             clap figment tempdir
             snafu anyhow thiserror

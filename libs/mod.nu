@@ -5,3 +5,4 @@ export use utils.nu *
 export use rust.nu
 export use nushell.nu
 export use setup.nu
+export use reverse.nu
