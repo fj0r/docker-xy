@@ -33,8 +33,8 @@ export def up [
     if ($bin | is-not-empty) {
         let dst = $env.BUILDAH_WORKING_MOUNTPOINT | path join usr/local/bin/
         lg o -p 'cargo-binstall-dir' $dst
-        curl -fsSL https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz
-        | tar zxf - -C $dst
+        let url = 'https://github.com/cargo-bins/cargo-binstall/releases/latest/download/cargo-binstall-x86_64-unknown-linux-musl.tgz'
+        curl -fsSL $url | tar zxf - -C $dst
         chmod +x ($dst | path join cargo-binstall)
         run [
             $"cargo binstall -y ($bin | str join ' ')"
@@ -46,7 +46,7 @@ export def up [
     ]
 }
 
-export def prefetch [owner workdir proj pkgs --test] {
+export def prefetch [owner workdir proj pkgs --test --debug] {
     let dst = $env.BUILDAH_WORKING_MOUNTPOINT
     | path join (relative-path $workdir)
     # mkdir $dst
@@ -63,6 +63,16 @@ export def prefetch [owner workdir proj pkgs --test] {
     }
     let dstf = $dst | path join $proj Cargo.toml
     lg o -p 'prefetch' $dstf
+    if $debug {
+        {
+            dst: $dst
+            dstf: $dstf
+        }
+        | load-env
+        use upterm.nu
+        upterm
+    }
+
     cat $dstf | from toml | update dependencies $pkgs 
     | do { let n = $in; print $n; $n }
     | save -f $dstf

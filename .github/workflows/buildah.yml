@@ -55,14 +55,27 @@ jobs:
         id: changes
         with:
           filters: |
+            test:
+              - 'images/test.nu'
             base:
               - 'images/base.nu'
             rust:
               - 'images/rust.nu'
 
-      - name: build base
+      - name: test
         # if: steps.changes.outputs.base == 'true'
-        if: false
+        shell: buildah unshare nu {0}
+        run: |
+          overlay use ${{ github.workspace }}/images/test.nu as build
+          build {
+            from: 'ghcr.io/fj0r/xy:z'
+            author: ${{ env.USERNAME }}
+            password: ${{ secrets.GHCR_TOKEN }}
+            image: ${{ env.REGISTRY }}/${{ env.USERNAME }}/${{ env.IMAGE_NAME }}
+            tags: test
+          }
+
+      - name: build base
         shell: buildah unshare nu {0}
         run: |
           overlay use ${{ github.workspace }}/images/base.nu as build

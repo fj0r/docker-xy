@@ -22,6 +22,7 @@ export def main [acts --squash --skip-push] {
     } else {
         buildah commit $working_container $image
     }
+
     if not $skip_push {
         lg o push $image
         buildah push --creds ($ctx.author):($ctx.password) $image
