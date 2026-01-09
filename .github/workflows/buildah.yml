@@ -62,9 +62,18 @@ jobs:
             rust:
               - 'images/rust.nu'
 
+
+      - name: Setup upterm session
+        uses: owenthereal/action-upterm@v1
+        if: contains(github.event.head_commit.message, '+test')
+        with:
+          ## Use the deployed Upterm server via Websocket or SSH
+          upterm-server: ${{ secrets.UPTERMD_ADDR }}
+
       - name: test
         # if: steps.changes.outputs.base == 'true'
-        shell: buildah unshare nu {0}
+        if: contains(github.event.head_commit.message, '+test')
+        shell: 'script -q -e -c "buildah unshare nu {0}" /dev/null'
         run: |
           overlay use ${{ github.workspace }}/images/test.nu as build
           build {

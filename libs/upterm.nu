@@ -5,42 +5,33 @@ export def main [server?] {
 }
 
 export def run-upterm [server?] {
-    let srv = if ($server | is-empty) { "" } else { $"--server ($server)" }
-    let log = [/tmp $"upterm.(random chars -l 8).log"] | path join
-    print $"pwd=(pwd) log=($log) server=($server)"
-    sh -c $"upterm host ($srv) --accept --force-command 'nu' -- nu > ($log) 2>&1 &"
-    print "init upterm session..."
-    let flag = "SSH Command"
-    loop {
-        if ($log | path exists) {
-            let content = (open $log | str trim)
-            if ($content | str contains $flag) {
-                break
-            }
-        }
-        sleep 1sec
+    let server_arg = if ($server | is-empty) { [] } else { [--server $server] }
+    # Define an admin socket path to allow 'session current' to connect
+
+    print $"pwd=(pwd) server=($server)"
+    print "Initializing upterm session..."
+
+    if not ('~/.ssh' | path exists) { mkdir ~/.ssh }
+    if not ('~/.ssh/id_ed25519' | path exists) {
+        ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519
     }
 
-    print "upterm ok..."
-    let session_info = (open $log
-        | lines
-        | where ($it | str contains $flag)
-        | first
-        | split row ":"
-        | last
-        | str trim)
+    let info = ^upterm ...[host ...$server_arg --skip-host-key-check --accept --force-command nu -- /usr/bin/env nu] | complete
+    print "Background process started."
 
-    print $"================================================"
-    print $"($flag): ($session_info)"
-    print $"================================================"
+    if ($info.exit_code == 0) {
+        # Parse the SSH connection string from stdout
+        let matches = ($info.stdout | lines | where $it =~ "SSH:" | first? | str replace "SSH:" "" | str trim)
+        if ($matches != null and ($matches | is-not-empty)) {
+            print "****** UPTERM CONNECTION INFO ******"
+            print $"SSH Command: ($matches)"
+            print "************************************"
 
-    let upterm_pid = (ps | where name == "upterm" | last | get pid)
-
-    loop {
-        if not (ps | any {|it| $it.pid == $upterm_pid}) {
-            print "upterm stop"
-            break
+            print "Session is active. Waiting for 1 hour..."
+            sleep 1hr
         }
-        sleep 5sec
+    } else {
+        print "Timeout: Could not retrieve upterm session info."
+        print $"Error: ($info.stderr)"
     }
 }

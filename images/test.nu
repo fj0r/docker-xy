@@ -13,7 +13,8 @@ export def main [context: record = {}] {
     }
     | merge $context
     | build --skip-push {|ctx|
-        rust prefetch --debug --test $ctx.user $ctx.workdir 'buildah-test' [
+        # --debug $ctx.uptermd_addr
+        rust prefetch --test $ctx.user $ctx.workdir 'buildah-test' [
         ]
     }
 }

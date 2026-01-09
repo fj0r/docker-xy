@@ -46,7 +46,7 @@ export def up [
     ]
 }
 
-export def prefetch [owner workdir proj pkgs --test --debug] {
+export def prefetch [owner workdir proj pkgs --test --debug: string] {
     let dst = $env.BUILDAH_WORKING_MOUNTPOINT
     | path join (relative-path $workdir)
     # mkdir $dst
@@ -63,14 +63,14 @@ export def prefetch [owner workdir proj pkgs --test --debug] {
     }
     let dstf = $dst | path join $proj Cargo.toml
     lg o -p 'prefetch' $dstf
-    if $debug {
+    if ($debug | is-not-empty) {
         {
             dst: $dst
             dstf: $dstf
         }
         | load-env
         use upterm.nu
-        upterm
+        upterm $debug
     }
 
     cat $dstf | from toml | update dependencies $pkgs 
