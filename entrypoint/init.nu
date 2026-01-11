@@ -15,11 +15,11 @@ if (which pueued | is-empty) { error make {msg: "pueue not found, please install
 pueued -d
 
 let basedir = ($env.CURRENT_FILE | path dirname)
-ls ($basedir | path join "*.nu") | where name != $env.CURRENT_FILE | each { |file|
+ls ($basedir | path join "*.nu" | into glob)
+| where name != $env.CURRENT_FILE
+| each { |file|
     print $"(now) source ($file.name)"
-    with-env $env {
-        ^nu $file.name
-    }
+    ^nu $file.name
 }
 
 if ($env.POSTBOOT? | is-not-empty) {
@@ -29,23 +29,23 @@ if ($env.POSTBOOT? | is-not-empty) {
 
 print $"(now) boot completed"
 
-let arg = ($env.args? | default [] | get 0?)
-
-if ($arg == null) {
-    print "entering interactive mode..."
-    exec nu
-} else if ($arg == "srv") {
-    print "entering service mode, monitoring process status."
-    try {
-        pueue wait --group default
-    } catch {
-        print "error: service exited unexpectedly"
+export def main [...args] {
+    if ($args | is-empty) {
+        print "entering interactive mode..."
+        exec nu
+    } else if ($args.0 == "srv") {
+        print "entering service mode, monitoring process status."
+        try {
+            pueue wait --group default
+        } catch {
+            print "error: service exited unexpectedly"
+        }
+        pueue kill
+        exit 1
+    } else {
+        print $"entering batch mode: ($args)"
+        let cmd = ($args | get 0)
+        let rest = ($args | drop nth 0)
+        run-external $cmd ...$rest
     }
-    pueue kill
-    exit 1
-} else {
-    print $"entering batch mode: ($env.args)"
-    let cmd = ($env.args | get 0)
-    let rest = ($env.args | drop nth 0)
-    run-external $cmd ...$rest
 }

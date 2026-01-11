@@ -6,7 +6,7 @@ export def main [context: record = {}] {
         author: unnamed
         timezone: Asia/Shanghai
         user: master
-        workdir: /home/orbit
+        workdir: /home/master
         config: {
             nushell: 'https://github.com/fj0r/nushell.git'
         }
@@ -21,8 +21,6 @@ export def main [context: record = {}] {
             MASTER: $ctx.user
             PYTHONUNBUFFERED: x
         }
-        # conf volume [$ctx.workdir]
-        conf workdir $ctx.workdir
         arch update
         arch install [
             sudo cronie tzdata
@@ -57,6 +55,8 @@ export def main [context: record = {}] {
             vscode-langservers-extracted
             yaml-language-server
         ]
+        # conf volume [$ctx.workdir]
+        conf workdir $ctx.workdir
         copy entrypoint /entrypoint
         conf env {
             DEBUGE: ''
@@ -66,6 +66,6 @@ export def main [context: record = {}] {
             git_pull: ''
         }
         conf cmd []
-        conf entrypoint ["/entrypoint/init.sh"]
+        conf entrypoint ["/entrypoint/init.nu"]
     }
 }

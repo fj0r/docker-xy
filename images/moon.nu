@@ -4,7 +4,7 @@ export def main [context: record = {}] {
     {
         from: 'ghcr.io/fj0r/xy:rust'
         user: master
-        workdir: /home/orbit
+        workdir: /home/master
     }
     | merge $context
     | build {|ctx|
