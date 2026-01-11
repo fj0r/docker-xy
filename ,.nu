@@ -11,10 +11,14 @@ export module test {
     --socat
     --s3
     --ssh
+    --check: duration = 10sec
     ...args
     ] {
+        let name = 'test-xy'
+        ^$env.CNTRCTL rm -f $name
         mut flag = [
             -it
+            --name $name
             --device /dev/fuse --privileged
             -v ($CWD)/entrypoint:/entrypoint
             --entrypoint /entrypoint/init.nu
@@ -32,6 +36,7 @@ export module test {
                 -e ed25519_a:1001=AAAAC3NzaC1lZDI1NTE5AAAAIM7kcdz6dTumkC1PftC8dM2ZFt2f3kpRt7pAdsNGYjsI
                 -e ed25519_b:1002=AAAAC3NzaC1lZDI1NTE5AAAAIM7kcdz6dTumkC1PftC8dM2ZFt2f3kpRt7pAdsNGYjsI
                 -p 2266:22
+                -e CHECK_INTERVAL=($check)
             ]
         }
         if $socat {

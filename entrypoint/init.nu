@@ -46,19 +46,44 @@ export def main [...args] {
     init
 
     if ($args | is-empty) {
-        print "entering interactive mode..."
+        print $"(now) entering interactive mode..."
         exec nu
     } else if ($args.0 == "srv") {
-        print "entering service mode, monitoring process status."
-        try {
-            pueue wait --group default
-        } catch {
-            print "error: service exited unexpectedly"
+        let g = 'default'
+        let interval = $env.CHECK_INTERVAL? | default '5sec' | into duration
+        print $"(now) entering service mode, monitoring process status."
+
+        mut finished = []
+        loop {
+            $finished = ^pueue status --json -g $g
+            | from json
+            | get tasks
+            | values
+            | each {|x|
+                {
+                    id: $x.id
+                    group: $x.group
+                    label: $x.label
+                    status: ($x.status | columns | first)
+                }
+            }
+            | where group == $g and status == "Done"
+
+            if ($finished | length) > 0 {
+                print $"(now) detected a task has exited!"
+                $finished
+                | insert output {|x|
+                    pueue log $x.id -j | from json | values | get output
+                }
+                | print ($in | to yaml)
+                pueue kill --group $g
+                break
+            }
+            sleep $interval
         }
-        pueue kill
         exit 1
     } else {
-        print $"entering batch mode: ($args)"
+        print $"(now) entering batch mode: ($args)"
         let cmd = ($args | get 0)
         let rest = ($args | drop nth 0)
         run-external $cmd ...$rest
@@ -74,4 +99,3 @@ export def pueue-extend [group, num = 1] {
 export def now [] {
     $"[(date now | format date '%FT%T%.3f')]"
 }
-
