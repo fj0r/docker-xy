@@ -1,35 +1,58 @@
 #!/usr/bin/env nu
 
 def now [] {
-    $"[(date now | format date '%Y-%m-%dT%H:%M:%S')]"
+    $"[(date now | format date '%FT%T%.3f')]"
 }
 
-if ($env.DEBUG? == 'true') { $env.config.show_errors = true }
+def init [] {
+    if ($env.DEBUG? == 'true') { $env.config.show_errors = true }
 
-if ($env.PREBOOT? | is-not-empty) {
-    print $"(now) preboot ($env.PREBOOT)"
-    nu -c $"source ($env.PREBOOT)"
+    if ($env.PREBOOT? | is-not-empty) {
+        print $"(now) preboot ($env.PREBOOT)"
+        nu -c $"source ($env.PREBOOT)"
+    }
+
+    if (which pueued | is-empty) { error make {msg: "pueue not found, please install it."} }
+    pueued -d
+
+    const basedir = path self .
+    let files = ls ($basedir | path join "*.nu" | into glob)
+    | where name != $env.CURRENT_FILE
+    | get name
+
+    if true {
+        mut script = [
+            "def begin [f] { print $\"[(date now | format date '%FT%T%.3f')] source ($f)\" }"
+            $'cd ($basedir)'
+        ]
+        for file in $files {
+            $script ++= [$"begin ($file)" $"source ($file)"]
+        }
+        $script
+        | str join (char newline)
+        | nu -c $in
+    } else {
+        for file in $files {
+            print $"(now) source ($file)"
+            nu $file
+        }
+    }
+
+
+
+
+
+    if ($env.POSTBOOT? | is-not-empty) {
+        print $"(now) postboot ($env.POSTBOOT)"
+        nu -c $"source ($env.POSTBOOT)"
+    }
+
+    print $"(now) boot completed"
 }
-
-if (which pueued | is-empty) { error make {msg: "pueue not found, please install it."} }
-pueued -d
-
-let basedir = ($env.CURRENT_FILE | path dirname)
-ls ($basedir | path join "*.nu" | into glob)
-| where name != $env.CURRENT_FILE
-| each { |file|
-    print $"(now) source ($file.name)"
-    ^nu $file.name
-}
-
-if ($env.POSTBOOT? | is-not-empty) {
-    print $"(now) postboot ($env.POSTBOOT)"
-    nu -c $"source ($env.POSTBOOT)"
-}
-
-print $"(now) boot completed"
 
 export def main [...args] {
+    init
+
     if ($args | is-empty) {
         print "entering interactive mode..."
         exec nu

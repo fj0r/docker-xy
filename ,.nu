@@ -6,13 +6,18 @@ export module test {
         buildah unshare nu images/test.nu
     }
 
-    export def run [...args] {
+    export def run [
+    --user(-u)
+    ...args
+    ] {
         mut flag = [
-            --user 1000
             -it
             -v ($CWD)/entrypoint:/entrypoint
             --entrypoint /entrypoint/init.nu
         ]
+        if $user {
+            $flag ++= [--user 1000]
+        }
         ^$env.CNTRCTL run ...[
             ...$flag
             ghcr.io/fj0r/xy:z
