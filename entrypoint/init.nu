@@ -1,9 +1,5 @@
 #!/usr/bin/env nu
 
-def now [] {
-    $"[(date now | format date '%FT%T%.3f')]"
-}
-
 def init [] {
     if ($env.DEBUG? == 'true') { $env.config.show_errors = true }
 
@@ -38,10 +34,6 @@ def init [] {
         }
     }
 
-
-
-
-
     if ($env.POSTBOOT? | is-not-empty) {
         print $"(now) postboot ($env.POSTBOOT)"
         nu -c $"source ($env.POSTBOOT)"
@@ -72,3 +64,14 @@ export def main [...args] {
         run-external $cmd ...$rest
     }
 }
+
+export def pueue-extend [group, num = 1] {
+    let status = pueue status -g $group -j | from json
+    let running = $status | get tasks | columns | length
+    pueue parallel -g $group ($running + $num)
+}
+
+export def now [] {
+    $"[(date now | format date '%FT%T%.3f')]"
+}
+

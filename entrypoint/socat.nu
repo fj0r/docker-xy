@@ -1,20 +1,34 @@
-def run_socat [proto: string, port: string, target: string] {
-    let logfile = if ($env.stdlog? != null) { "/dev/stdout" } else { $"/var/log/socat_($proto)_($port)" }
+use init.nu pueue-extend
 
-    let cmd = $"sudo socat ($proto)-listen:($port),reuseaddr,fork ($proto):($target)"
-
-    pueue add --group default --title $"socat_($proto)_($port)" -- $"($cmd) 2>&1 | sudo tee -a ($logfile)"
-
-    print $"($proto):($port) --> ($target)"
-}
-
-$env | transpose key value | each { |row|
-    if ($row.key | str starts-with "tcp_") {
-        let port = ($row.key | str replace "tcp_" "")
-        run_socat "tcp" $port $row.value
-    } else if ($row.key | str starts-with "udp_") {
-        let port = ($row.key | str replace "udp_" "")
-        run_socat "udp" $port $row.value
+def run_socat [job] {
+    if ($job | is-empty) { return }
+    let g = 'default'
+    pueue-extend $g ($job | length)
+    for j in $job {
+        let cmd = $"sudo socat ($j.proto)-listen:($j.port),reuseaddr,fork ($j.proto):($j.target)"
+        pueue add -g $g -l $"socat_($j.proto)_($j.port)" -- $"($cmd)"
+        print $"($j.proto):($j.port) --> ($j.target)"
     }
 }
 
+$env
+| transpose k v
+| each {|r|
+    match ($r.k | split row '_') {
+        ['tcp' $port] => {
+            {
+                proto: 'tcp'
+                port: $port
+                target: $r.v
+            }
+        }
+        ['udp' $port] => {
+            {
+                proto: 'udp'
+                port: $port
+                target: $r.v
+            }
+        }
+    }
+}
+| run_socat $in

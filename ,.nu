@@ -8,6 +8,7 @@ export module test {
 
     export def run [
     --user(-u)
+    --socat(-s)
     ...args
     ] {
         mut flag = [
@@ -17,6 +18,14 @@ export module test {
         ]
         if $user {
             $flag ++= [--user 1000]
+        }
+        if $socat {
+            $flag ++= [
+                -e tcp_123=abc:123
+                -e tcp_456=abc:456
+                -e udp_123=uuu:123
+                -e udp_456=uuu:456
+            ]
         }
         ^$env.CNTRCTL run ...[
             ...$flag
