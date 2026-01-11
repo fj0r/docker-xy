@@ -1,5 +1,5 @@
 #!/usr/bin/env nu
-use init.nu pueue-extend
+use init.nu [pueue-extend now]
 
 def run_socat [job] {
     if ($job | is-empty) { return }
@@ -8,7 +8,7 @@ def run_socat [job] {
     for j in $job {
         let cmd = $"sudo socat ($j.proto)-listen:($j.port),reuseaddr,fork ($j.proto):($j.target)"
         pueue add -g $g -l $"socat_($j.proto)_($j.port)" -- $"($cmd)"
-        print $"($j.proto):($j.port) --> ($j.target)"
+        print $"(now) ($j.proto):($j.port) --> ($j.target)"
     }
 }
 

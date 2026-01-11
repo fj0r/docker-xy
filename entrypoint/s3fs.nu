@@ -1,9 +1,9 @@
 #!/usr/bin/env nu
 
-# s3fs if s3_id=mount,user,endpoint,region,bucket,accesskey,secretkey,opts...
-# opts: nonempty,use_path_request_style,use_xattr,a=1,b=2
 use init.nu pueue-extend
 
+# s3fs if s3_id=mount,user,endpoint,region,bucket,accesskey,secretkey,opts...
+# opts: nonempty,use_path_request_style,use_xattr,a=1,b=2
 def run_s3 [s3_id: string, s3_args: string] {
     let arr = $s3_args | split row ","
 
@@ -67,13 +67,13 @@ def run_s3 [s3_id: string, s3_args: string] {
     pueue add --group default -l $"s3fs_($s3_id)" -- $"($s3fs_cmd)"
 }
 
-let s3_configs = $env | transpose key value | where key starts-with "s3_"
+let s3_configs = $env | transpose k v | where k starts-with "s3_"
 
 if ($s3_configs | is-not-empty) {
     pueue-extend default ($s3_configs | length)
-    $s3_configs | each { |row|
-        let s3_id = ($row.key | str replace "s3_" "")
+    for r in $s3_configs {
+        let s3_id = ($r.k | str replace "s3_" "")
         print $"Configuring S3FS: ($s3_id)"
-        run_s3 $s3_id $row.value
+        run_s3 $s3_id $r.v
     }
 }
