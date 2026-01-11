@@ -6,7 +6,7 @@ export def main [context: record = {}] {
         author: unnamed
         timezone: Asia/Shanghai
         user: master
-        workdir: /world
+        workdir: /home/orbit
         config: {
             nushell: 'https://github.com/fj0r/nushell.git'
         }
@@ -21,7 +21,7 @@ export def main [context: record = {}] {
             MASTER: $ctx.user
             PYTHONUNBUFFERED: x
         }
-        conf volume [$ctx.workdir]
+        # conf volume [$ctx.workdir]
         conf workdir $ctx.workdir
         arch update
         arch install [

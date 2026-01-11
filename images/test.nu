@@ -5,7 +5,7 @@ export def main [context: record = {}] {
         from: 'ghcr.io/fj0r/xy:z'
         author: fj0r
         user: master
-        workdir: /world
+        workdir: /home/orbit
         rust: {
             channel: stable
         }

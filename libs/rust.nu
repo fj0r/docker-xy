@@ -78,7 +78,7 @@ export def prefetch [owner workdir proj pkgs --test --debug: string] {
     | save -f $dstf
 
     if $test {
-        run [$'cat /world/($proj)/Cargo.toml']
+        run [$'cat /home/orbit/($proj)/Cargo.toml']
         return
     }
 

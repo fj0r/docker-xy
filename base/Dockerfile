@@ -33,8 +33,8 @@ RUN set -eux \
   ; git config --global user.email "unnamed@container" \
   \
   ; useradd -mU -G wheel,root -s /usr/bin/nu $MASTER \
-  ; mkdir -p /world \
-  ; chown $MASTER:$MASTER -R /world \
+  ; mkdir -p /home/orbit \
+  ; chown $MASTER:$MASTER -R /home/orbit \
   ; XDG_CONFIG_HOME=/home/${MASTER}/.config \
   ; mkdir -p $XDG_CONFIG_HOME \
   ; chown $MASTER:$MASTER -R $XDG_CONFIG_HOME \
@@ -64,8 +64,8 @@ RUN set -eux \
   #; rm -rf /var/lib/pacman/* \
   ;
 
-VOLUME /world
-WORKDIR /world
+VOLUME /home/orbit
+WORKDIR /home/orbit
 
 ENV DEBUGE=
 ENV PREBOOT=
