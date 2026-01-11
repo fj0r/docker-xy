@@ -8,16 +8,24 @@ export module test {
 
     export def run [
     --user(-u)
-    --socat(-s)
+    --socat
+    --s3
     ...args
     ] {
         mut flag = [
             -it
+            --device /dev/fuse --privileged
             -v ($CWD)/entrypoint:/entrypoint
             --entrypoint /entrypoint/init.nu
         ]
         if $user {
             $flag ++= [--user 1000]
+        }
+        if $s3 {
+            $flag ++= [
+                -e 's3_pre=/srv/att,root,http://x.com,oss,test,access,secrets,nonempty'
+                -e 's3_dev=/srv/att,root,http://x.com,oss,test,access,secrets,nonempty'
+            ]
         }
         if $socat {
             $flag ++= [

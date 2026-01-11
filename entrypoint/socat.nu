@@ -1,3 +1,4 @@
+#!/usr/bin/env nu
 use init.nu pueue-extend
 
 def run_socat [job] {

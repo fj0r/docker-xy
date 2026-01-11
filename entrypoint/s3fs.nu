@@ -1,80 +1,76 @@
 #!/usr/bin/env nu
 
-# --- 核心函数：运行 s3fs ---
+# s3fs if s3_id=mount,user,endpoint,region,bucket,accesskey,secretkey,opts...
+# opts: nonempty,use_path_request_style,use_xattr,a=1,b=2
+use init.nu pueue-extend
+
 def run_s3 [s3_id: string, s3_args: string] {
-    # 1. 结构化解析 CSV 参数
-    let arr = ($s3_args | split row ",")
+    let arr = $s3_args | split row ","
 
-    let mount_point = ($arr | get 0)
-    let user        = ($arr | get 1)
-    let endpoint    = ($arr | get 2)
-    let region      = ($arr | get 3)
-    let bucket      = ($arr | get 4)
-    let access_key  = ($arr | get 5)
-    let secret_key  = ($arr | get 6)
+    let o = [
+        mount_point
+        user
+        endpoint
+        region
+        bucket
+        access_key
+        secret_key
+    ]
+    | enumerate
+    | reduce -f {} {|i, a|
+        $a | insert $i.item ($arr | get $i.index)
+    }
 
-    # 2. 解析后续的动态选项 (opts)
-    # 逻辑：如果选项是 key=value 则保留，如果是 key 则转为 -o key
-    let raw_opts = ($arr | drop 7)
-    let opt_args = ($raw_opts | each { |it|
+    let raw_opts = $arr | slice 7..
+    let opt_args = $raw_opts | each { |it|
         if ($it | str contains "=") {
             ["-o" $it]
         } else {
             ["-o" $it]
         }
-    } | flatten)
+    } | flatten
 
-    # 3. 准备认证文件
-    let safe_name = ($mount_point | str replace -a "/" "_")
-    let logfile = $"/var/log/s3fs_($safe_name)"
+    let safe_name = $o.mount_point | str replace -a "/" "_"
     let auth_dir = "/.s3fs-passwd"
     let auth_file = $"($auth_dir)/($safe_name)"
 
-    if (not ($auth_dir | path exists)) {
+    if not ($auth_dir | path exists) {
         sudo mkdir $auth_dir
     }
 
     print $"Generating authfile: ($auth_file)"
-    $"($access_key):($secret_key)\n" | sudo tee $auth_file | ignore
+    $"($o.access_key):($o.secret_key)\n" | sudo tee $auth_file | ignore
     sudo chmod "go-rwx" $auth_file
-    sudo chown $user $auth_file
+    sudo chown $o.user $auth_file
 
-    # 4. 准备挂载点
-    sudo mkdir -p $mount_point
-    sudo chown $user $mount_point
+    sudo mkdir -p $o.mount_point
+    sudo chown $o.user $o.mount_point
 
-    # 5. 构建区域/终结点逻辑
-    let region_opts = if ($region | is-empty) {
+    let region_opts = if ($o.region | is-empty) {
         ["-o" "use_path_request_style"]
     } else {
-        ["-o" $"endpoint=($region)"]
+        ["-o" $"endpoint=($o.region)"]
     }
 
-    # 6. 构建最终命令并提交给 Pueue
-    # 注意：s3fs 必须加 -f (foreground) 才能被进程管理器正确监控
     let s3fs_cmd = [
-        "sudo" "-u" $user "s3fs" "-f"
+        "sudo" "-u" $o.user "s3fs" "-f"
         ...$opt_args
-        "-o" $"bucket=($bucket)"
+        "-o" $"bucket=($o.bucket)"
         "-o" $"passwd_file=($auth_file)"
-        "-o" $"url=($endpoint)"
+        "-o" $"url=($o.endpoint)"
         ...$region_opts
-        $mount_point
+        $o.mount_point
     ] | str join " "
 
-    print $"Starting s3fs ($s3_id) for ($mount_point)"
+    print $"Starting s3fs ($s3_id) for ($o.mount_point)"
 
-    # 将任务添加到 Pueue，并重定向日志
-    pueue add --group default --title $"s3fs_($s3_id)" -- $"($s3fs_cmd) 2>&1 | sudo tee -a ($logfile)"
+    pueue add --group default -l $"s3fs_($s3_id)" -- $"($s3fs_cmd)"
 }
 
-# --- 执行入口 ---
-# 搜索所有以 s3_ 开头的环境变量
-let s3_configs = ($env | transpose key value | where key starts-with "s3_")
+let s3_configs = $env | transpose key value | where key starts-with "s3_"
 
-if ($s3_configs | is-empty) {
-    print "No S3 configurations found."
-} else {
+if ($s3_configs | is-not-empty) {
+    pueue-extend default ($s3_configs | length)
     $s3_configs | each { |row|
         let s3_id = ($row.key | str replace "s3_" "")
         print $"Configuring S3FS: ($s3_id)"
